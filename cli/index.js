@@ -113,8 +113,10 @@ const API_ADAPTERS = {
     formatRequest: (config, query) => ({
       model: config.model,
       max_tokens: config.maxTokens,
-      system: config.systemPrompt,
-      messages: [{ role: 'user', content: `Research this thoroughly: "${query}"\n\nSearch Wikipedia, Open Library, recent news, and academic sources. Write a complete cited report with data, statistics, and expert perspectives.` }],
+      messages: [
+        { role: 'system', content: config.systemPrompt },
+        { role: 'user', content: `Research this thoroughly: "${query}"\n\nSearch Wikipedia, Open Library, recent news, and academic sources. Write a complete cited report with data, statistics, and expert perspectives.` }
+      ],
       stream: false
     }),
     formatHeaders: (config, apiKey) => ({
@@ -122,11 +124,11 @@ const API_ADAPTERS = {
       'Authorization': `Bearer ${apiKey}`
     }),
     parseResponse: (data) => {
-      if (data.content) {
-        return data.content;
-      }
       if (data.choices && data.choices[0] && data.choices[0].message) {
         return data.choices[0].message.content;
+      }
+      if (data.content) {
+        return data.content;
       }
       throw new Error('Invalid response format');
     }

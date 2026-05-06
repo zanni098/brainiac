@@ -91,6 +91,30 @@ const API_ADAPTERS = {
       }
       throw new Error('Invalid response format');
     }
+  },
+  custom: {
+    formatRequest: (config, query) => ({
+      model: config.model,
+      max_tokens: config.maxTokens,
+      messages: [
+        { role: 'system', content: config.systemPrompt },
+        { role: 'user', content: `Research this thoroughly: "${query}"` }
+      ],
+      stream: false
+    }),
+    formatHeaders: (config, apiKey) => ({
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    }),
+    parseResponse: (data) => {
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        return data.choices[0].message.content;
+      }
+      if (data.content) {
+        return data.content;
+      }
+      throw new Error('Invalid response format');
+    }
   }
 };
 
@@ -109,12 +133,20 @@ const screen = blessed.screen({
   title: 'Brainiac Research Agent'
 });
 
-// Layout
-const grid = new contrib.grid({ rows: 12, cols: 12, screen: screen });
+// Simple form layout
+const form = blessed.form({
+  parent: screen,
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  keys: true,
+  mouse: true
+});
 
 // Header
 const header = blessed.box({
-  parent: screen,
+  parent: form,
   top: 0,
   left: 0,
   width: '100%',
@@ -128,13 +160,13 @@ const header = blessed.box({
 });
 
 // Input box
-const inputBox = blessed.textbox({
-  parent: screen,
+const inputBox = blessed.textarea({
+  parent: form,
   top: 2,
   left: 1,
   width: '100%-2',
   height: 3,
-  label: ' Research Query ',
+  label: ' Research Query (press Enter to submit): ',
   inputOnFocus: true,
   keys: true,
   mouse: true,
@@ -152,7 +184,7 @@ const inputBox = blessed.textbox({
 
 // Status box
 const statusBox = blessed.box({
-  parent: screen,
+  parent: form,
   top: 5,
   left: 1,
   width: '100%-2',
@@ -160,17 +192,18 @@ const statusBox = blessed.box({
   content: ' Ready - Type a query and press Enter to research ',
   tags: true,
   style: {
-    fg: 'green'
+    fg: 'green',
+    bg: 'black'
   }
 });
 
 // Output box
-const outputBox = blessed.box({
-  parent: screen,
+const outputBox = blessed.textarea({
+  parent: form,
   top: 6,
   left: 1,
   width: '100%-2',
-  height: '100%-7',
+  height: '100%-10',
   label: ' Research Report ',
   scrollable: true,
   alwaysScroll: true,
@@ -193,12 +226,12 @@ const outputBox = blessed.box({
 
 // Help box
 const helpBox = blessed.box({
-  parent: screen,
+  parent: form,
   bottom: 0,
   left: 0,
   width: '100%',
-  height: 1,
-  content: ' {bold}Enter{/bold}: Research | {bold}Ctrl+C{/bold}: Exit | {bold}Ctrl+E{/bold}: Export | {bold}Ctrl+H{/bold}: History ',
+  height: 2,
+  content: ' {bold}Enter{/bold}: Research | {bold}Ctrl+C{/bold}: Exit | {bold}Ctrl+E{/bold}: Export | {bold}Ctrl+H{/bold}: History | {bold}Ctrl+R{/bold}: Return to input ',
   tags: true,
   style: {
     fg: 'gray',
@@ -221,7 +254,7 @@ inputBox.key('enter', async () => {
   if (!query.trim()) return;
 
   const config = loadConfig();
-  
+
   if (!config.apiKey) {
     statusBox.setContent('{red-fg}Error: No API key configured. Use CLI to run: brainiac config{/red-fg}');
     screen.render();
@@ -237,16 +270,17 @@ inputBox.key('enter', async () => {
   try {
     const report = await runResearch(query, config);
     currentReport = report;
-    
+
     // Format for TUI
     const formattedReport = report
       .replace(/## (.+)/g, '\n{bold}{cyan-fg}$1{/cyan-fg}{/bold}\n')
       .replace(/### (.+)/g, '\n{bold}{yellow-fg}$1{/yellow-fg}{/bold}\n')
       .replace(/\[(\d+)\]/g, '{green-fg}[$1]{/green-fg}');
-    
-    outputBox.setContent(formattedReport);
+
+    outputBox.setValue(formattedReport);
+    outputBox.focus();
     statusBox.setContent('{green-fg}Research complete!{/green-fg}');
-    
+
     // Save to history
     history.unshift({
       id: Date.now(),
@@ -256,11 +290,11 @@ inputBox.key('enter', async () => {
     });
     history = history.slice(0, 50);
     fs.writeFileSync(historyFile, JSON.stringify(history, null, 2));
-    
+
   } catch (error) {
     statusBox.setContent(`{red-fg}Error: ${error.message}{/red-fg}`);
   }
-  
+
   screen.render();
 });
 
@@ -272,6 +306,13 @@ screen.key(['escape', 'q', 'C-c'], () => {
   return process.exit(0);
 });
 
+// Return to input
+screen.key('C-r', () => {
+  inputBox.focus();
+  statusBox.setContent('{green-fg}Ready - Type a query and press Enter to research{/green-fg}');
+  screen.render();
+});
+
 // Export functionality
 screen.key('C-e', () => {
   if (!currentReport) {
@@ -279,11 +320,11 @@ screen.key('C-e', () => {
     screen.render();
     return;
   }
-  
+
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const filename = `brainiac-report-${timestamp}.md`;
   const filepath = path.join(os.homedir(), filename);
-  
+
   fs.writeFileSync(filepath, currentReport);
   statusBox.setContent(`{green-fg}Exported to ${filepath}{/green-fg}`);
   screen.render();
@@ -296,15 +337,16 @@ screen.key('C-h', () => {
     screen.render();
     return;
   }
-  
+
   let historyText = '{bold}{cyan-fg}Research History{/cyan-fg}{/bold}\n\n';
   history.forEach((item, index) => {
     historyText += `${index + 1}. {bold}${item.query}{/bold}\n`;
     historyText += `   ${new Date(item.timestamp).toLocaleString()}\n\n`;
   });
-  
-  outputBox.setContent(historyText);
-  statusBox.setContent('{green-fg}History displayed{/green-fg}');
+
+  outputBox.setValue(historyText);
+  outputBox.focus();
+  statusBox.setContent('{green-fg}History displayed - Press Ctrl+R to return to input{/green-fg}');
   screen.render();
 });
 
