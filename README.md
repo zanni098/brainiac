@@ -1,19 +1,53 @@
 # Brainiac 🧠
 
-A flexible, customizable research agent that supports custom LLM API integration. Brainiac performs deep research with cited sources, enabling you to connect any LLM provider (Anthropic, OpenAI, or custom APIs) to generate comprehensive research reports.
+A complete research agent platform with multiple interfaces - GUI, CLI, TUI, and Desktop App. Brainiac performs deep research with cited sources, enabling you to connect any LLM provider (Anthropic, OpenAI, or custom APIs) to generate comprehensive research reports.
 
-![Brainiac](https://img.shields.io/badge/Brainiac-Research%20Agent-gold) ![React](https://img.shields.io/badge/React-18+-blue) ![License](https://img.shields.io/badge/License-MIT-green)
+![Brainiac](https://img.shields.io/badge/Brainiac-Research%20Agent-gold) ![Node.js](https://img.shields.io/badge/Node.js-18+-green) ![Electron](https://img.shields.io/badge/Electron-28+-blue) ![License](https://img.shields.io/badge/License-MIT-green)
+
+## 🎯 Available Versions
+
+- **GUI Version** - Modern web interface with real-time streaming
+- **CLI Version** - Command-line interface for terminal users
+- **TUI Version** - Rich terminal interface with keyboard navigation
+- **Desktop App** - Native application for Mac, Windows, and Linux
 
 ## ✨ Features
 
-- **Multi-Provider Support**: Seamlessly switch between Anthropic Claude, OpenAI GPT, or any custom LLM API
-- **Deep Research**: Automatically searches Wikipedia, Open Library, and recent news articles
-- **Cited Sources**: Generates reports with inline citations and numbered references
-- **Streaming Responses**: Real-time text generation with search progress indicators
-- **Custom Configuration**: Configure API endpoints, models, tokens, and system prompts
-- **Beautiful UI**: Elegant, dark-themed interface with smooth animations
-- **Local Storage**: Saves your API configuration securely in your browser
-- **Zero Dependencies**: Pure React component - no build tools required
+### Core Features (All Versions)
+- **Multi-Provider Support**: Anthropic Claude, OpenAI GPT, or any custom LLM API
+- **Deep Research**: Searches Wikipedia, Open Library, recent news, and academic sources
+- **Cited Sources**: Inline citations with numbered references
+- **Custom Configuration**: API endpoints, models, tokens, and system prompts
+- **Research History**: Save and review past research sessions
+- **Export Options**: Markdown, TXT, and JSON formats
+
+### GUI Version Features
+- Real-time streaming responses
+- Beautiful dark-themed interface
+- Research history browser
+- Export to multiple formats
+- Responsive design
+
+### CLI Version Features
+- Full command-line control
+- Batch research capabilities
+- History management
+- Script-friendly output
+- Works on all platforms
+
+### TUI Version Features
+- Rich terminal interface
+- Keyboard shortcuts
+- Visual progress indicators
+- Inline report viewing
+- History navigation
+
+### Desktop App Features
+- Native application experience
+- Offline-ready configuration
+- System tray integration
+- Auto-updates (planned)
+- Cross-platform support
 
 ## 🚀 Quick Start
 
@@ -25,43 +59,107 @@ git clone https://github.com/zanni098/brainiac.git
 cd brainiac
 ```
 
-2. Install dependencies (if using a React project):
+2. Install dependencies:
 ```bash
-npm install react
+npm install
 ```
 
-3. Import the component:
-```jsx
-import Brainiac from './brainiac';
+3. Configure your API key:
+```bash
+npm run cli config
 ```
 
-4. Use it in your app:
-```jsx
-function App() {
-  return <Brainiac />;
+### Running Brainiac
+
+#### GUI Version (Web)
+```bash
+npm run dev
+```
+Open http://localhost:5173 in your browser.
+
+#### CLI Version
+```bash
+npm run cli research "quantum computing"
+npm run cli history
+```
+
+#### TUI Version
+```bash
+npm run tui
+```
+
+#### Desktop App
+```bash
+# Development
+npm run electron:dev
+
+# Build for your platform
+npm run electron:build:mac    # macOS
+npm run electron:build:win    # Windows
+npm run electron:build:linux  # Linux
+```
+
+For detailed installation instructions, see [INSTALL.md](INSTALL.md).
+
+## 📖 Usage Guide
+
+### GUI Version
+
+1. Click the **⚙️ SETTINGS** button to configure your API
+2. Enter a research topic in the search box
+3. Click **RESEARCH →** or press Enter
+4. View the generated report with citations
+5. Use **📚 HISTORY** to review past research
+6. Export reports in MD, TXT, or JSON format
+
+### CLI Version
+
+```bash
+# Research a topic
+brainiac research "climate change"
+
+# Export to file
+brainiac research "AI ethics" -o report.md
+
+# View history
+brainiac history
+
+# Export specific report
+brainiac export 1 output.md
+
+# Clear history
+brainiac history --clear
+```
+
+### TUI Version
+
+Keyboard shortcuts:
+- `Enter`: Research current query
+- `Ctrl+C`: Exit
+- `Ctrl+E`: Export current report
+- `Ctrl+H`: View history
+
+## 🔧 Configuration
+
+All versions share the same configuration stored in `~/.brainiac/config.json`:
+
+```json
+{
+  "provider": "anthropic",
+  "apiUrl": "https://api.anthropic.com/v1/messages",
+  "apiKey": "your-api-key",
+  "model": "claude-sonnet-4-20250514",
+  "maxTokens": 4096,
+  "systemPrompt": "..."
 }
 ```
 
-### Configuration
+Configure via CLI:
+```bash
+brainiac config
+```
 
-1. Click the **⚙️ SETTINGS** button in the top-right corner
-2. Select your API provider:
-   - **Anthropic (Claude)**: Uses Anthropic's API format
-   - **OpenAI (GPT)**: Uses OpenAI's API format
-   - **Custom**: For any other LLM API
-3. Enter your API credentials:
-   - **API URL**: Your provider's endpoint (e.g., `https://api.anthropic.com/v1/messages`)
-   - **API Key**: Your authentication key (stored locally in your browser)
-   - **Model**: The model name (e.g., `claude-sonnet-4-20250514`, `gpt-4`)
-   - **Max Tokens**: Maximum response length
-   - **System Prompt**: Optional custom instructions for the AI
-
-### Usage
-
-1. Enter a research topic in the search box
-2. Click **RESEARCH →** or press Enter
-3. Watch as Brainiac searches multiple sources and generates a cited report
-4. Review the structured report with sections for Summary, Background, Recent News, Key Books, Analysis, and References
+Or edit the file directly.
 
 ## 🔧 API Provider Setup
 
@@ -73,7 +171,7 @@ function App() {
   apiUrl: "https://api.anthropic.com/v1/messages",
   apiKey: "sk-ant-...",
   model: "claude-sonnet-4-20250514",
-  maxTokens: 1000
+  maxTokens: 4096
 }
 ```
 
@@ -87,7 +185,7 @@ Get your API key from: https://console.anthropic.com/
   apiUrl: "https://api.openai.com/v1/chat/completions",
   apiKey: "sk-...",
   model: "gpt-4",
-  maxTokens: 1000
+  maxTokens: 4096
 }
 ```
 
@@ -98,26 +196,27 @@ Get your API key from: https://platform.openai.com/api-keys
 ```javascript
 {
   provider: "custom",
-  apiUrl: "http://localhost:11434/api/chat", // Example: Ollama
+  apiUrl: "http://localhost:11434/api/chat",
   apiKey: "your-key-or-empty",
   model: "llama2",
-  maxTokens: 2000
+  maxTokens: 4096
 }
 ```
 
-For local models like Ollama, you may need a proxy server to handle streaming. The custom adapter assumes Anthropic-style streaming format.
-
 ## 📋 Report Structure
 
-Brainiac generates reports with these sections:
+Brainiac generates comprehensive reports with these sections:
 
 - **## [Title]**: Descriptive title for the research
-- **### Summary**: Brief overview of findings
-- **### Background**: Historical context from Wikipedia
-- **### Recent news**: Current developments (last 12 months)
-- **### Key books**: Relevant literature from Open Library
-- **### Analysis**: Deep dive and insights
-- **### References**: Numbered list with full URLs
+- **### Executive Summary**: Brief overview of key findings
+- **### Background & Context**: Historical context from Wikipedia
+- **### Recent Developments**: Current developments (last 12 months)
+- **### Key Findings & Data**: Statistics and data points
+- **### Expert Perspectives**: Quotes and expert opinions
+- **### Books & Academic Sources**: Relevant literature from Open Library
+- **### Critical Analysis**: Deep dive and balanced perspectives
+- **### Implications & Future Outlook**: Forward-looking analysis
+- **### References**: Numbered list with full URLs and dates
 
 All claims are cited inline using superscript numbers `[1][2][3]` with corresponding references at the end.
 
@@ -125,40 +224,26 @@ All claims are cited inline using superscript numbers `[1][2][3]` with correspon
 
 ### System Prompt
 
-Modify the system prompt to change research behavior:
+Modify the system prompt to change research behavior. The default prompt is comprehensive but you can customize it via:
 
-```javascript
-systemPrompt: `You are a research analyst. For every query you MUST:
-1. Search Wikipedia for background and context
-2. Search Open Library (openlibrary.org) for relevant books
-3. Search for recent news articles (last 12 months)
-
-Then write a structured report using EXACTLY these headers:
-## [Descriptive title for this report]
-### Summary
-### Background
-### Recent news
-### Key books
-### Analysis
-### References
-
-Rules:
-- Cite inline as [1][2][3] using superscript numbers
-- References section: numbered list, include full URLs
-- Each section minimum 3-5 sentences
-- Be specific, analytical, and cite everything`
+```bash
+brainiac config
 ```
 
-### Styling
+Or edit `~/.brainiac/config.json` directly.
 
-The component uses inline styles for simplicity. To customize the appearance, modify the style objects in the component or extract them to a CSS file.
+### Styling (GUI Version)
+
+The GUI uses inline styles for portability. To customize:
+1. Modify style objects in `gui/brainiac.jsx`
+2. Or extract to a CSS file and update `gui/src/index.css`
 
 ## 🔒 Security
 
-- **API keys are stored locally** in your browser's localStorage
+- **API keys are stored locally** in `~/.brainiac/config.json` (CLI/TUI) or browser localStorage (GUI)
 - No data is sent to any server other than your configured LLM API
 - Configuration persists between sessions on the same device
-- Clear your browser data to remove stored credentials
+- Clear `~/.brainiac/` directory or browser data to remove credentials
 
 ## 🛠️ Development
 
@@ -166,14 +251,26 @@ The component uses inline styles for simplicity. To customize the appearance, mo
 
 ```
 brainiac/
-├── brainiac.jsx       # Main React component
-├── README.md          # This file
-└── ABOUT.md           # Detailed about documentation
+├── gui/              # Web/GUI version
+│   ├── brainiac.jsx  # Main React component
+│   ├── src/          # React app source
+│   └── index.html    # HTML entry point
+├── cli/              # CLI version
+│   └── index.js      # CLI implementation
+├── tui/              # TUI version
+│   └── index.js      # Terminal UI implementation
+├── electron/         # Desktop app
+│   └── main.js       # Electron main process
+├── package.json      # Dependencies and scripts
+├── vite.config.js    # Vite configuration
+├── README.md         # This file
+├── INSTALL.md        # Detailed installation guide
+└── ABOUT.md          # About documentation
 ```
 
 ### Adding New API Providers
 
-To add support for a new LLM provider, extend the `API_ADAPTERS` object in `brainiac.jsx`:
+To add support for a new LLM provider, extend the `API_ADAPTERS` object in the appropriate version file:
 
 ```javascript
 const API_ADAPTERS = {
@@ -185,8 +282,11 @@ const API_ADAPTERS = {
     formatHeaders: (config, apiKey) => ({
       // Format headers for your API
     }),
+    parseResponse: (data) => {
+      // Parse response (CLI/TUI)
+    },
     parseStream: (line) => {
-      // Parse streaming response
+      // Parse streaming response (GUI)
     }
   }
 };
@@ -197,11 +297,11 @@ const API_ADAPTERS = {
 Contributions are welcome! Areas for improvement:
 
 - Additional API provider adapters (Google Gemini, Cohere, etc.)
-- Export reports to PDF/Markdown
-- Save research history
+- Export reports to PDF
 - Collaborative research features
-- Mobile responsive improvements
+- Mobile app version
 - Internationalization support
+- Plugin system for custom data sources
 
 Feel free to open issues or submit pull requests.
 
@@ -214,13 +314,14 @@ MIT License - feel free to use this project for personal or commercial purposes.
 - Original research agent concept
 - Anthropic Claude API
 - OpenAI GPT API
-- React community
+- React, Vite, and Electron communities
+- Blessed and Commander libraries
 
 ## 📞 Support
 
 For issues, questions, or suggestions:
-- Open an issue on GitHub: https://github.com/zanni098/brainiac/issues
-- Contact: https://asadsinc.vercel.app/
+- GitHub Issues: https://github.com/zanni098/brainiac/issues
+- Documentation: [INSTALL.md](INSTALL.md), [ABOUT.md](ABOUT.md)
 
 ---
 
