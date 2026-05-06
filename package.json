@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "A complete research agent with GUI, CLI, TUI, and desktop app support",
   "main": "electron/main.js",
+  "bin": {
+    "brainiac": "./cli/index.js"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
